@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8095
+  description: Generated server url
+paths:
+  /registros:
+    get:
+      tags:
+      - registro-pesaje-controller
+      operationId: obtenerRegistros
+      parameters:
+      - name: desde
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: hasta
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    post:
+      tags:
+      - registro-pesaje-controller
+      operationId: crearRegistro
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroPesaje"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /registros/{id}/estado:
+    patch:
+      tags:
+      - registro-pesaje-controller
+      operationId: actualizarEstado
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: nuevoEstado
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - INGRESADO
+          - PESADO
+          - APROBADO
+          - RECHAZADO
+          - DESPACHADO
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /registros/{id}:
+    get:
+      tags:
+      - registro-pesaje-controller
+      operationId: obtenerPorId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+components:
+  schemas:
+    RegistroPesaje:
+      type: object
+      properties:
+        id:
+          type: string
+        idBalanza:
+          type: string
+          minLength: 1
+        idPaquete:
+          type: string
+          minLength: 1
+        pesoEnSansas:
+          type: number
+          format: double
+        categoria:
+          type: string
+          enum:
+          - LIVIANO
+          - MEDIANO
+          - PESADO
+        estado:
+          type: string
+          enum:
+          - INGRESADO
+          - PESADO
+          - APROBADO
+          - RECHAZADO
+          - DESPACHADO
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - idBalanza
+      - idPaquete
+      - pesoEnSansas
