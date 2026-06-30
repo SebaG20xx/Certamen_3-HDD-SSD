@@ -1,0 +1,5 @@
+- [Inicio](/)
+- [Arquitectura](arquitectura.md)
+- [Configuración del entorno](configuracion.md)
+- [Manual de usuario](manual-usuario.md)
+- [API - Swagger UI](http://localhost:8095/swagger-ui.html)
