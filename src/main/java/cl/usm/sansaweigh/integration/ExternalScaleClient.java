@@ -1,9 +1,8 @@
 package cl.usm.sansaweigh.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,10 +19,7 @@ public class ExternalScaleClient {
     private RestTemplate restTemplate;
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private RedisTemplate<Object, Object> redisTemplate;
 
     @Value("${scale.api.url}")
     private String scaleApiUrl;
@@ -55,8 +51,7 @@ public class ExternalScaleClient {
 
     private void guardarEnCache(String scaleId, EspecificacionBalanza spec) {
         try {
-            String json = objectMapper.writeValueAsString(spec);
-            redisTemplate.opsForValue().set(CACHE_PREFIX + scaleId, json, 120, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(CACHE_PREFIX + scaleId, spec, 120, TimeUnit.SECONDS);
         } catch (Exception ex) {
             // Si falla el guardado en caché, no interrumpimos el flujo
         }
@@ -64,13 +59,13 @@ public class ExternalScaleClient {
 
     private EspecificacionBalanza obtenerDesdeCache(String scaleId) {
         try {
-            String json = redisTemplate.opsForValue().get(CACHE_PREFIX + scaleId);
-            if (json != null) {
-                return objectMapper.readValue(json, EspecificacionBalanza.class);
+            Object cached = redisTemplate.opsForValue().get(CACHE_PREFIX + scaleId);
+            if (cached instanceof EspecificacionBalanza spec) {
+                return spec;
             }
-            String jsonDefault = redisTemplate.opsForValue().get(CACHE_KEY_DEFAULT);
-            if (jsonDefault != null) {
-                return objectMapper.readValue(jsonDefault, EspecificacionBalanza.class);
+            Object defaultSpec = redisTemplate.opsForValue().get(CACHE_KEY_DEFAULT);
+            if (defaultSpec instanceof EspecificacionBalanza spec) {
+                return spec;
             }
         } catch (Exception ex) {
             // Si falla la lectura del caché, retornamos null
